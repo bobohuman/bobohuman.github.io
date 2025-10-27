@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>圖片選擇題問卷</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', '微軟正黑體', Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      max-width: 520px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 2.5em 2em 2em 2em;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(60, 90, 180, 0.12), 0 2px 8px #ccc;
+      transition: box-shadow 0.3s;
+    }
+    .container:hover {
+      box-shadow: 0 12px 40px rgba(60, 90, 180, 0.18), 0 2px 8px #bbb;
+    }
+    .question {
+      font-size: 1.35em;
+      margin-bottom: 1.2em;
+      color: #2943b6;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .image {
+      display: block;
+      margin: 0 auto 1em auto;
+      max-width: 100%;
+      max-height: 260px;
+      box-shadow: 0 2px 12px #bcd;
+      border-radius: 12px;
+      background: #f6f6f6;
+      animation: fadeIn 0.6s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .options {
+      margin-bottom: 1.2em;
+    }
+    .option {
+      margin-bottom: 0.65em;
+      padding: 0.3em 0.8em;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .option:hover {
+      background: #f0f4ff;
+    }
+    .option input[type="radio"] {
+      accent-color: #4f8ef7;
+      margin-right: 0.6em;
+      transform: scale(1.2);
+    }
+    .next-btn {
+      padding: 0.5em 2em;
+      font-size: 1.08em;
+      border: none;
+      background: linear-gradient(90deg, #4f8ef7 60%, #8fd3f4 100%);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: 0 2px 8px #cce;
+      letter-spacing: 0.5px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .next-btn:hover:not([disabled]) {
+      background: linear-gradient(90deg, #2943b6 60%, #4f8ef7 100%);
+      box-shadow: 0 4px 16px #bcd;
+    }
+    .next-btn[disabled] {
+      background: #ccc;
+      color: #fff;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .center {
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+    input[type="number"] {
+      border: 1px solid #cdd;
+      border-radius: 6px;
+      padding: 0.2em 0.5em;
+      font-size: 1.08em;
+      margin-right: 1em;
+      text-align: center;
+      background: #f8fafc;
+      transition: border 0.2s;
+    }
+    input[type="number"]:focus {
+      border: 1.5px solid #4f8ef7;
+      outline: none;
+      background: #eaf4ff;
+    }
+    .result-json {
+      background: #252d3a;
+      color: #e1eafc;
+      padding: 1.2em 1em;
+      border-radius: 10px;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-size: 1.05em;
+      margin: 1.5em 0 0 0;
+      white-space: pre-wrap;
+      box-shadow: 0 2px 12px #bcd;
+      word-break: break-all;
+    }
+    /* scroll bar for result */
+    .result-json::-webkit-scrollbar {
+      height: 6px;
+      background: #232b39;
+    }
+    .result-json::-webkit-scrollbar-thumb {
+      background: #4f8ef7;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="quiz-container">
+    <!-- 問卷內容由 JS 動態產生 -->
+  </div>
+  <script>
+    var imageUrls = [
+      'images/img1.jpg',
+      'images/img2.jpg',
+      'images/img3.jpg',
+      'images/img4.jpg',
+      'images/img5.jpg',
+      'images/img6.jpg',
+      'images/img7.jpg',
+      'images/img8.jpg',
+      'images/img9.jpg',
+      'images/img10.jpg'
+    ];
+
+    const optionsList = [
+      ["黑猩猩", "棒球選手"],
+      ["消防局", "糖果店"],
+      ["鰻魚", "虎鯊"],
+      ["馬", "黃金獵犬"],
+      ["停車收費器", "停止標誌"],
+      ["穀倉", "溫室"],
+      ["犰狳", "籃球"],
+      ["蘋果", "知更鳥"],
+      ["馬克杯", "泡泡"],
+      ["蜈蚣", "蠟筆"]
+    ];
+
+    const questions = imageUrls.map((url, idx) => ({
+      id: idx,
+      type: "image-choice",
+      question: `請判斷這張圖片內容（第${idx+1}題）`,
+      image: url,
+      options: optionsList[idx]
+    }));
+    let current = 0;
+    let answers = [];
+
+    // 預載圖片
+    function preloadImages(urls, callback) {
+      let loaded = 0;
+      const total = urls.length;
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = `<div class="center" style="font-size:1.2em;padding:2em;">圖片載入中... (${loaded}/${total})</div>`;
+      urls.forEach((url) => {
+        const img = new Image();
+        img.onload = img.onerror = function() {
+          loaded++;
+          container.innerHTML = `<div class="center" style="font-size:1.2em;padding:2em;">圖片載入中... (${loaded}/${total})</div>`;
+          if (loaded === total) {
+            callback();
+          }
+        };
+        img.src = url;
+      });
+    }
+
+    // 開始畫面
+    function renderStart() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = `
+        <div class="center" style="font-size:1.5em;margin-bottom:1em;color:#2943b6;font-weight:600;">圖片辨識問卷</div>
+        <div style="margin-bottom:1.8em;color:#444;">按下「開始作答」後，將依序顯示圖片，每張圖片僅顯示0.5秒。</div>
+        <div class="center">
+          <button class="next-btn" id="start-btn">開始作答</button>
+        </div>
+      `;
+      document.getElementById('start-btn').onclick = function() {
+        showImageThenQuestion(current);
+      }
+    }
+
+    function showImageThenQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = `
+        <div class="center" style="margin-bottom:1em;">
+          <img class="image" src="${q.image}" alt="圖片題目" id="show-image" />
+        </div>
+      `;
+      const img = document.getElementById('show-image');
+      img.onload = function() {
+        setTimeout(() => {
+          renderQuestion(index);
+        }, 500); // 0.5秒
+      };
+      if (img.complete) {
+        setTimeout(() => {
+          renderQuestion(index);
+        }, 500);
+      }
+    }
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = `
+        <div class="question">${q.question}</div>
+        <form id="options-form" class="options">
+          ${q.options.map((opt, i) => `
+            <div class="option">
+              <label>
+                <input type="radio" name="option" value="${opt}"> ${opt}
+              </label>
+            </div>
+          `).join('')}
+        </form>
+        <div class="center">
+          <button class="next-btn" id="next-btn" disabled>下一題</button>
+        </div>
+      `;
+
+      document.getElementById('options-form').addEventListener('change', function(e) {
+        if (e.target.name === 'option') {
+          document.getElementById('next-btn').disabled = false;
+        }
+      });
+
+      document.getElementById('next-btn').onclick = function() {
+        const selectedOption = document.querySelector('input[name="option"]:checked').value;
+        answers.push({
+          id: q.id,
+          answer: selectedOption,
+        });
+        if (current < questions.length - 1) {
+          current++;
+          showImageThenQuestion(current);
+        } else {
+          renderSummary();
+        }
+      }
+    }
+
+    function renderSummary() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = `
+        <div class="center" style="font-size:1.25em;margin-bottom:1em;color:#2943b6;font-weight:600;">問卷完成！</div>
+        <div style="margin-bottom:1em;color:#444;">請問你覺得自己總共答對了幾題？</div>
+        <div class="center" style="margin-bottom:1.5em;">
+          <input type="number" id="total-correct" min="0" max="${questions.length}" style="width:150px;font-size:1.08em;">
+          <br><br>
+          <button class="next-btn" id="submit-btn">送出</button>
+        </div>
+      `;
+        document.getElementById('submit-btn').onclick = function() {
+          const totalCorrect = document.getElementById('total-correct').value;
+          // 加入時間戳
+          const result = {
+            answers,
+            totalCorrect: Number(totalCorrect),
+            timestamp: new Date().toISOString()
+          };
+          // JSON字串化
+          const jsonStr = JSON.stringify(result);
+          // Base64編碼
+          const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+          // 顯示
+          container.innerHTML = `
+            <div class="center" style="font-size:1.2em;margin-top:2em;color:#2943b6;font-weight:600;">感謝作答！</div>
+            <div style="margin-top:1em;color:#444;">你的答案已送出。</div>
+            <div style="margin-top:2em;">
+              <div style="font-weight:600;color:#2943b6;margin-bottom:0.5em;">請妥善保存此編碼，用於驗證並回傳到表單：</div>
+              <pre class="result-json" id="result-json"></pre>
+            </div>
+          `;
+          document.getElementById('result-json').textContent = encoded;
+        }
+    }
+
+    // 啟動問卷，先預載圖片
+    preloadImages(imageUrls, renderStart);
+  </script>
+</body>
+</html>
