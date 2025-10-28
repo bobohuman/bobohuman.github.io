@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>聊天室式個人資料表單</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", "微軟正黑體", Arial, sans-serif;
+      background: linear-gradient(120deg, #e0eaff 0%, #f9f9f9 100%);
+      color: #333;
+      padding: 40px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      padding: 36px 24px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 22px;
+      color: #007BFF;
+      letter-spacing: 1px;
+    }
+    .remark {
+      font-size: 15px;
+      color: #666;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .chat-box {
+      min-height: 260px;
+      margin-bottom: 18px;
+      padding: 14px 8px;
+      background: #f2f6fa;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      overflow-y: auto;
+      max-height: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .message {
+      max-width: 80%;
+      padding: 10px 16px;
+      border-radius: 18px;
+      margin: 4px 0;
+      line-height: 1.7;
+      font-size: 16px;
+      word-break: break-word;
+      position: relative;
+      display: inline-block;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+    .bot {
+      align-self: flex-start;
+      background: #e4f0ff;
+      color: #007BFF;
+      font-weight: 500;
+      border-bottom-left-radius: 4px;
+    }
+    .user {
+      align-self: flex-end;
+      background: #fffbe4;
+      color: #333;
+      font-weight: 500;
+      border-bottom-right-radius: 4px;
+      text-align: right;
+    }
+    .input-area {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      font-size: 16px;
+      background: #f8fafc;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus {
+      border: 1.5px solid #007BFF;
+      outline: none;
+      background: #fff;
+    }
+    button {
+      padding: 0 20px;
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(0,123,255,0.09);
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #hiddenForm { display: none; }
+    .guide-btn {
+      width: 100%;
+      margin: 18px 0 0 0;
+      padding: 10px 0;
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+      box-shadow: 0 2px 6px rgba(0,123,255,0.09);
+    }
+    .guide-btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+  <h2>嗨！來聊聊認識彼此吧</h2>
+  <div class="remark">用你習慣的聊天語氣回答就好 </div>
+    <div class="chat-box" id="chatBox"></div>
+    <form id="chatForm" autocomplete="off" style="display:none;">
+      <div class="input-area">
+        <input type="text" id="chatInput" autofocus>
+        <button type="submit">送出</button>
+      </div>
+    </form>
+    <form id="hiddenForm" action="https://formspree.io/f/xjkaprry" method="POST">
+      <input type="hidden" name="資料" id="dataField">
+      <input type="hidden" name="受測者編號" id="subjectField">
+    </form>
+    <button class="guide-btn" id="startBtn" style="display:none;">我知道了，開始作答</button>
+  </div>
+  <script>
+const questions = [
+  "嗨嗨～我可以叫你什麼名字呢？",
+  "你今年幾歲了呀?",
+  "你會怎麼稱呼你的性別呢？",
+  "你大概多高呀？",
+  "最近體重是多少呢？如果不想說也沒關係",
+  "你的生日是哪一天？",
+  "你平常是如何稱呼你的爸爸呢？（小名也可以）",
+  "媽媽的名字是什麼呢？還是你都怎麼叫她？",
+  "你屬什麼？還記得嗎？",
+  "你知道自己的星座嗎？還是你比較相信血型？",
+  "你現在主要在做什麼？（學生、上班族、還是斜槓人生？）",
+  "你目前是什麼學歷呢？）",
+  "平常有什麼興趣或嗜好？（打電動、追劇、運動都算！）",
+  "你家鄉在哪裡呀？或是你最有感情的地方是？"
+];
+    const guideText = `
+    這份問卷主要是想了解你「平時的聊天風格」，請你用最自然的方式作答，你可以用表情符號、語助詞、打很正式或很隨興都可以，
+  你的回答沒有標準答案，只要是你平常會用的語氣或方式都很棒。
+  <br>
+
+
+例如：<br>
+- 「哈囉～我是小明😆」<br>
+- 「我今年大概快30了吧...哈哈」<br>
+- 「女生啦～」<br>
+- 「身高好像170cm？」<br>
+- 「星座…我好像是天秤座？」<br>
+- 「興趣就是打電動跟追劇XD」
+<br>
+
+這樣的回覆對我們後續的研究真的很有幫助，非常感謝你的參與！！`;
+
+    let answers = [];
+    let current = 0;
+    let step = "guide"; // guide, questions, summary, subjectId, done
+
+    const chatBox = document.getElementById('chatBox');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const hiddenForm = document.getElementById('hiddenForm');
+    const dataField = document.getElementById('dataField');
+    const subjectField = document.getElementById('subjectField');
+    const startBtn = document.getElementById('startBtn');
+
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + sender;
+      msg.innerHTML  = text;
+      chatBox.appendChild(msg);
+      setTimeout(() => {
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 100);
+    }
+
+    function nextQuestion() {
+      if (current < questions.length) {
+        addMessage(questions[current], 'bot');
+        chatInput.value = '';
+        chatInput.removeAttribute("placeholder");
+        chatInput.focus();
+      } else {
+        step = "summary";
+        setTimeout(() => {
+          setTimeout(() => {
+            step = "subjectId";
+            chatInput.value = '';
+            chatInput.removeAttribute("placeholder");
+            addMessage('感謝你的回答，最後請填寫受測者編號～', 'bot');
+            chatInput.focus();
+          }, 1000);
+        }, 800);
+      }
+    }
+
+    chatForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = chatInput.value.trim();
+      if (!val) return;
+      if (step === "questions") {
+        addMessage(val, 'user');
+        answers.push(val);
+        current++;
+        setTimeout(nextQuestion, 600);
+      } else if (step === "subjectId") {
+        addMessage(val, 'user');
+        step = "done";
+        let summary = '';
+        for (let i = 0; i < questions.length; i++) {
+          summary += `${questions[i]} ${answers[i]}\n`;
+        }
+        dataField.value = summary;
+        subjectField.value = val;
+        hiddenForm.submit();
+        setTimeout(() => {
+          addMessage('已完成所有填寫，感謝你的協助！有任何問題都可以再找我聊天喔～', 'bot');
+          chatForm.style.display = 'none';
+        }, 800);
+      }
+    });
+
+    // 首次載入：先顯示引導說明
+    window.onload = function() {
+      addMessage(guideText, 'bot');
+      startBtn.style.display = 'block';
+    };
+
+    // 點擊「我知道了」才進入提問
+    startBtn.addEventListener('click', function() {
+      startBtn.style.display = 'none';
+      chatForm.style.display = 'block';
+      step = "questions";
+      nextQuestion();
+    });
+  </script>
+</body>
+</html>
