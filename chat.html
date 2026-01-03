@@ -221,7 +221,7 @@
 <body>
   <div class="container">
     <h2>個人資料收集表單</h2>
-    <div class="remark">收集你的興趣及聊天習慣 </div>
+    <div class="remark" id="remark">收集你的興趣及聊天習慣 </div>
     <div class="chat-box" id="chatBox"></div>
     <form id="chatForm" autocomplete="off" style="display:none;">
       <div class="input-area">
@@ -229,13 +229,26 @@
         <button type="submit">送出</button>
       </div>
     </form>
-    <form id="hiddenForm" action="https://formspree.io/f/xjkaprry" method="POST">
+    <form id="hiddenForm" action="https://formsubmit.co/bo5494bo@alum.ccu.edu.tw" method="POST">
       <input type="hidden" name="資料" id="dataField">
       <input type="hidden" name="受測者編號" id="subjectField">
     </form>
     <button class="guide-btn" id="startBtn" style="display:none;">我知道了，開始作答</button>
   </div>
   <script>
+    // 取得網址參數 sid
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    const subjectId = getQueryParam('sid');
+    if (subjectId) {
+      document.getElementById('subjectField').value = subjectId;
+      // 顯示在畫面上
+      document.getElementById('remark').innerHTML += `<br>您的受測者編號：<strong>${subjectId}</strong>`;
+    }
+
     const questions = [
       "嗨嗨～我可以叫你什麼名字呢？",
       "你今年幾歲了呀?",
@@ -305,32 +318,50 @@
           setTimeout(() => {
             step = "subjectId";
             chatInput.value = '';
-            chatInput.setAttribute("placeholder", "請填寫受測者編號...");
-            addMessage('感謝你的回答，最後請填寫受測者編號', 'bot');
-            chatInput.focus();
-          }, 1000);
-        }, 800);
+            chatInput.setAttribute("placeholder", subjectId ? "受測者編號已自動帶入" : "請填寫受測者編號...");
+            if (!subjectId) {
+              addMessage('感謝你的回答，最後請填寫受測者編號', 'bot');
+              chatInput.focus();
+            } else {
+              addMessage('感謝你的回答，受測者編號已自動帶入：' + subjectId, 'bot');
+              chatInput.disabled = true;
+              setTimeout(() => {
+                // 自動送出
+                step = "done";
+                let summary = '';
+                for (let i = 0; i < questions.length; i++) {
+                  summary += `${questions[i]} ${answers[i]}\n`;
+                }
+                dataField.value = summary;
+                hiddenForm.submit();
+                setTimeout(() => {
+                  chatForm.style.display = 'none';
+                }, 100);
+              }, 100);
+            }
+          }, 100);
+        }, 100);
       }
     }
 
     chatForm.addEventListener('submit', function(e) {
       e.preventDefault();
       const val = chatInput.value.trim();
-      if (!val) return;
+      if (!val && !subjectId) return;
       if (step === "questions") {
         addMessage(val, 'user');
         answers.push(val);
         current++;
         setTimeout(nextQuestion, 600);
-      } else if (step === "subjectId") {
+      } else if (step === "subjectId" && !subjectId) {
         addMessage(val, 'user');
+        subjectField.value = val;
         step = "done";
         let summary = '';
         for (let i = 0; i < questions.length; i++) {
           summary += `${questions[i]} ${answers[i]}\n`;
         }
         dataField.value = summary;
-        subjectField.value = val;
         hiddenForm.submit();
         setTimeout(() => {
           chatForm.style.display = 'none';
