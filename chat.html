@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: "Noto Sans TC", "微軟正黑體", Arial, sans-serif;
-      background: linear-gradient(120deg, #e0eaff 0%, #f9f9f9 100%);
+      background: linear-gradient(120deg, #dbeafe 0%, #f1f5f9 100%);
       color: #333;
       padding: 40px;
     }
@@ -21,7 +21,7 @@
     h2 {
       text-align: center;
       margin-bottom: 22px;
-      color: #007BFF;
+      color: #2563eb;
       letter-spacing: 1px;
     }
     .remark {
@@ -34,7 +34,7 @@
       min-height: 260px;
       margin-bottom: 18px;
       padding: 14px 8px;
-      background: #f2f6fa;
+      background: #f3f4f6;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       overflow-y: auto;
@@ -57,17 +57,19 @@
     }
     .bot {
       align-self: flex-start;
-      background: #e4f0ff;
-      color: #007BFF;
+      background: linear-gradient(90deg, #dbeafe 60%, #a7f3d0 100%);
+      color: #2563eb;
       font-weight: 500;
       border-bottom-left-radius: 4px;
+      border-top-left-radius: 4px;
     }
     .user {
       align-self: flex-end;
-      background: #fffbe4;
-      color: #333;
+      background: linear-gradient(90deg, #bbf7d0 60%, #fff 100%);
+      color: #065f46;
       font-weight: 500;
       border-bottom-right-radius: 4px;
+      border-top-right-radius: 4px;
       text-align: right;
     }
     .input-area {
@@ -85,13 +87,13 @@
       transition: border 0.2s;
     }
     input[type="text"]:focus {
-      border: 1.5px solid #007BFF;
+      border: 1.5px solid #2563eb;
       outline: none;
       background: #fff;
     }
     button {
       padding: 0 20px;
-      background: #007BFF;
+      background: #2563eb;
       color: #fff;
       border: none;
       border-radius: 12px;
@@ -99,17 +101,17 @@
       cursor: pointer;
       transition: background 0.2s;
       font-weight: 500;
-      box-shadow: 0 2px 6px rgba(0,123,255,0.09);
+      box-shadow: 0 2px 6px rgba(37,99,235,0.09);
     }
     button:hover {
-      background: #0056b3;
+      background: #1e40af;
     }
     #hiddenForm { display: none; }
     .guide-btn {
       width: 100%;
       margin: 18px 0 0 0;
       padding: 10px 0;
-      background: #007BFF;
+      background: #22c55e;
       color: #fff;
       border: none;
       border-radius: 12px;
@@ -117,14 +119,15 @@
       cursor: pointer;
       font-weight: 500;
       transition: background 0.2s;
-      box-shadow: 0 2px 6px rgba(0,123,255,0.09);
+      box-shadow: 0 2px 6px rgba(34,197,94,0.09);
     }
     .guide-btn:hover {
-      background: #0056b3;
+      background: #16a34a;
     }
   </style>
 </head>
 <body>
+  <!-- 你的 HTML 結構不變，直接貼上即可 -->
   <div class="container">
   <h2>嗨！來聊聊認識彼此吧</h2>
   <div class="remark">用你習慣的聊天語氣回答就好 </div>
@@ -142,32 +145,30 @@
     <button class="guide-btn" id="startBtn" style="display:none;">我知道了，開始作答</button>
   </div>
   <script>
-const questions = [
-  "嗨嗨～我可以叫你什麼名字呢？",
-  "你今年幾歲了呀?",,
-  "你的生日是哪一天？",
-  "你知道自己的星座嗎？還是你比較相信血型？",
-  "你現在主要在做什麼？（學生、上班族、還是斜槓人生？）",
-  "你目前是什麼學歷呢？",
-  "平常有什麼興趣或嗜好？",
-  "你家鄉在哪裡呀？或是你最有感情的地方是？"
-];
+    // 你的 JS 不變
+    const questions = [
+      "嗨嗨～我可以叫你什麼名字呢？",
+      "你今年幾歲了呀?",
+      "你的生日是哪一天？",
+      "你知道自己的星座嗎？還是你比較相信血型？",
+      "你現在主要在做什麼？（學生、上班族、還是斜槓人生？）",
+      "你目前是什麼學歷呢？",
+      "平常有什麼興趣或嗜好？",
+      "你家鄉在哪裡呀？或是你最有感情的地方是？"
+    ];
     const guideText = `
     這份問卷主要是想了解你「平時的聊天風格」，請你用最自然的方式作答，你可以用表情符號、語助詞、打很正式或很隨興都可以，
-  你的回答沒有標準答案，只要是你平常會用的語氣或方式都很棒。
-  <br>
-
-
-例如：<br>
-- 「哈囉～我是小明😆」<br>
-- 「我今年大概快30了吧...哈哈」<br>
-- 「女生啦～」<br>
-- 「身高好像170cm？」<br>
-- 「星座…我好像是天秤座？」<br>
-- 「興趣就是打電動跟追劇XD」
-<br>
-
-這樣的回覆對我們後續的研究真的很有幫助，非常感謝你的參與！！`;
+    你的回答沒有標準答案，只要是你平常會用的語氣或方式都很棒。
+    <br>
+    例如：<br>
+    - 「哈囉～我是小明😆」<br>
+    - 「我今年大概快30了吧...哈哈」<br>
+    - 「女生啦～」<br>
+    - 「身高好像170cm？」<br>
+    - 「星座…我好像是天秤座？」<br>
+    - 「興趣就是打電動跟追劇XD」
+    <br>
+    這樣的回覆對我們後續的研究真的很有幫助，非常感謝你的參與！！`;
 
     let answers = [];
     let current = 0;
@@ -252,5 +253,3 @@ const questions = [
   </script>
 </body>
 </html>
-
-
